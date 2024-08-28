@@ -1,4 +1,9 @@
 from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+
+from softdeletable.managers import SoftDeletableManager
 
 
 class SoftDeletableModel(models.Model):
@@ -6,8 +11,8 @@ class SoftDeletableModel(models.Model):
     Abstract model that provides soft delete functionality.
     """
     _is_deleted = models.BooleanField(_("Is "), default=False, db_index=True, editable=False)
-    _deactivation_date = models.DateTimeField(blank=True, null=True, db_index=True, editable=False)
-    related_deactivables = []
+    _deletion_date = models.DateTimeField(blank=True, null=True, db_index=True, editable=False)
+    related_softdeletables = []
 
     class Meta:
         abstract = True
@@ -23,14 +28,14 @@ class SoftDeletableModel(models.Model):
         self._deactivation_date = timezone.now() if deactivation_date is None else deactivation_date
         if save:
             self.save()
-            if self.related_deactivables:
-                for related_deactivable_field in self.related_deactivables:
+            if self.related_softdeletables:
+                for related_softdeletable_field in self.related_softdeletables:
                     try:
-                        related_deactivable_set = getattr(self, related_deactivable_field)
+                        related_softdeletable_set = getattr(self, related_softdeletable_field)
                     except AttributeError:
                         continue
                     else:
-                        for related_deactivable in related_deactivable_set.all():
+                        for related_deactivable in related_softdeletable_set.all():
                             related_deactivable.deactivate(save)
 
     def activate(self, save: bool = True):
@@ -41,20 +46,20 @@ class SoftDeletableModel(models.Model):
         self._deactivation_date = None
         if save:
             self.save()
-            if self.related_deactivables:
-                for related_deactivable_field in self.related_deactivables:
+            if self.related_softdeletables:
+                for related_softdeletable_field in self.related_softdeletables:
                     try:
-                        related_deactivable_set = getattr(self, related_deactivable_field)
+                        related_softdeletable_set = getattr(self, related_softdeletable_field)
                     except AttributeError:
                         continue
                     else:
-                        for related_deactivable in related_deactivable_set.all():
-                            related_deactivable.activate(save)
+                        for related_softdeletable in related_softdeletable_set.all():
+                            related_softdeletable.activate(save)
 
     @property
     def is_active(self):
-        return self._deactivation_date is None or self._deactivation_date > timezone.now()
+        return self._deletion_date is None or self._deletion_date > timezone.now()
 
     @property
-    def deactivation_date(self):
-        return self._deactivation_date
+    def deletion_date(self):
+        return self._deletion_date
