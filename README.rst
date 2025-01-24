@@ -6,11 +6,11 @@ Softdeletable is a Django app that provides soft delete functionality for your m
 Features
 --------
 
-- Soft delete objects by marking them as deleted without removing them from the database.
+- Soft-delete objects by marking them as deleted without removing them from the database.
 - Restore soft-deleted objects.
-- Query for available (non-deleted) and soft-deleted objects.
+- Query for available (non-softdeleted) and soft-deleted objects.
 - Integration with Django admin for managing soft-deleted objects.
-- Support for related objects soft deletion.
+- Support for related objects soft-deletion.
 
 Installation
 ------------
@@ -59,18 +59,34 @@ Use the custom manager methods to query for available and soft-deleted objects::
     # Get all soft-deleted objects
     softdeleted_objects = MyModel.objects.softdeleted()
 
-Soft Deleting and Restoring
+Soft-deleting and Restoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Soft delete an object::
+Soft-delete an object::
 
     obj = MyModel.objects.get(id=1)
     obj.softdelete()
+
+
+
+Soft-delete Parameters:
+
+- **save**: If True, the object will be saved after deactivation. If also\_related is True, save turns to True. Defaults to False.
+- **deletion\_date**: If not provided, `deletion_date` = datetime.now(timezone.utc).
+- **also\_related**: If True, softdelete related softdeletables. Defaults to True.
+- **user**: User that softdeletes the object. Only when django-reversion is used.
 
 Restore a soft-deleted object::
 
     obj = MyModel.objects.get(id=1)
     obj.restore()
+
+
+Restore Parameters::
+
+- **save**: If True, the object will be saved after restoration. If also\_related is True, save turns to True. Defaults to False.
+- **also\_related**: If True, restore related softdeletables. Defaults to True.
+- **user**: User that restores the object. Only when django-reversion is used.
 
 Admin Integration
 ~~~~~~~~~~~~~~~~~
@@ -99,7 +115,7 @@ To integrate soft-delete functionality into the Django admin, use the provided a
     admin.site.register(MyModel, MyModelSoftdeletedAdmin)
 
 
-If you need more than one admin class for a specific model, you must use proxy models::
+Npote: If you want to implement more than one admin class for the same model, you must create at least one `proxy model <https://docs.djangoproject.com/en/5.1/topics/db/models/#proxy-models>`
 
     class MyModelAvailable(MyModel):
         class Meta:
