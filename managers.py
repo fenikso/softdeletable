@@ -2,7 +2,7 @@ from django.db.models import Manager, QuerySet, Q
 from django.utils import timezone
 
 
-class SoftdeletableQuerySetMixin:
+class SoftDeletableQuerySetMixin:
     def available(self):
         return self.filter(Q(_softdeletion_date=None) | Q(_softdeletion_date__gt=timezone.now()))
 
@@ -14,17 +14,17 @@ class SoftdeletableQuerySetMixin:
         Softdelete all the objects in the queryset
         """
         count = 0
-        count_related = 0
-        # TODO: return the number of objects softdeleted
         for obj in self:
-            obj.softdelete()
+            if obj.softdelete():
+                count += 1
+        return count
 
 
-class SoftdeletableQuerySet(SoftdeletableQuerySetMixin, QuerySet):
+class SoftDeletableQuerySet(SoftDeletableQuerySetMixin, QuerySet):
     pass
 
 
-class SoftdeletableManagerMixin:
+class SoftDeletableManagerMixin:
     def available(self):
         return self.get_queryset().available()
 
@@ -32,6 +32,6 @@ class SoftdeletableManagerMixin:
         return self.get_queryset().softdeleted()
 
 
-class SoftdeletableManager(SoftdeletableManagerMixin, Manager):
+class SoftDeletableManager(SoftDeletableManagerMixin, Manager):
     def get_queryset(self):
-        return SoftdeletableQuerySet(self.model, using=self._db)
+        return SoftDeletableQuerySet(self.model, using=self._db)
