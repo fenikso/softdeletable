@@ -66,7 +66,7 @@ class SoftDeletableModel(models.Model):
                     self.save()
             else:
                 self.save()
-            if self.get_related_softdeletables():
+            if also_related and self.get_related_softdeletables():
                 for related_softdeletable_field in self.get_related_softdeletables():
                     try:
                         related_softdeletable_set = getattr(self, related_softdeletable_field)
@@ -87,6 +87,8 @@ class SoftDeletableModel(models.Model):
         if not self.is_softdeleted:
             return False
 
+        save = save or also_related
+
         self._is_restored = True
         self._softdeletion_date = None
         if save:
@@ -98,7 +100,7 @@ class SoftDeletableModel(models.Model):
                         self.save()
                 else:
                     self.save()
-            if self.get_related_softdeletables():
+            if also_related and self.get_related_softdeletables():
                 for related_softdeletable_field in self.get_related_softdeletables():
                     try:
                         related_softdeletable_set = getattr(self, related_softdeletable_field)
