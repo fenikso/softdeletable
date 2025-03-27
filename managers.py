@@ -33,5 +33,6 @@ class SoftDeletableManagerMixin:
 
 
 class SoftDeletableManager(SoftDeletableManagerMixin, Manager):
+
     def get_queryset(self):
         return SoftDeletableQuerySet(self.model, using=self._db)
